@@ -1,11 +1,14 @@
+const db = require('./db/connection')
+
 const inquirer = require('inquirer');
 const fs = require('fs');
+const cTable = require('console.table');
 
 
 // main application which executes at start
 function appMenu () {
     // initial menu displays
-    inquirer.prompt([
+    return inquirer.prompt([
         {
             type: 'list',
             name: 'menu',
@@ -23,6 +26,12 @@ function appMenu () {
         }
     ])
     .then(result => {
+        // if(result.menu === 'view all departments') {
+        //     viewDepartments();
+        // } else {
+        //     console.log('selected other');
+        // }
+        // switch statement for response handling
         switch (result.menu) {
             case 'view all departments':
                 viewDepartments();
@@ -45,20 +54,48 @@ function appMenu () {
             case 'update employee role':
                 updateRole();
                 break;
+            case 'close':
+                closeApp();
+                break;
         };
-    })
-}
+    });
+};
 
 function viewDepartments() {
-    console.log('case 1');
+    const sql = `SELECT * FROM departments`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.log(err)
+        }
+        console.table(rows);
+        // returns to the main menu
+        appMenu();
+    });   
 };
 
 function viewRoles() {
-    console.log('case 2');
+    const sql = `SELECT * FROM roles`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.log(err)
+        }
+        console.table(rows);
+        // returns to the main menu
+        appMenu();
+    });
 };
 
 function viewEmployees() {
-    console.log('case 3');
+    const sql = `SELECT * FROM employees`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.log(err)
+        }
+        console.table(rows);
+        // returns to the main menu
+        appMenu();
+    });
+    
 };
 
 function addDepartment() {
@@ -76,6 +113,10 @@ function addEmployee() {
 function updateRole() {
     console.log('case 7');
 };
+
+function close() {
+    console.log('close');
+}
 
 // starts menu on startup
 appMenu();
