@@ -2,8 +2,22 @@ const db = require('./db/connection')
 
 const inquirer = require('inquirer');
 const fs = require('fs');
-const cTable = require('console.table');
-const { SIGALRM } = require('constants');
+const cTable = require('console.table'); 
+const { query } = require('./db/connection');
+
+// functions to store table data for prompts
+// function currentEmployees () {
+//     const sql = `Select * From employees`
+// }   db.query(sql, (req, rows) => {
+//     if(err) {
+//         console.log(err);
+//     }
+//     // push each employee from table into array
+//     for (i=0; i<rows.length; i++) {
+//         const currentEmployees = currentEmployees.push(rows[i].first_name);
+//     } 
+// })
+
 
 // main application which executes at start
 function appMenu () {
@@ -84,8 +98,11 @@ function viewRoles() {
 };
 
 function viewEmployees() {
-    const sql = `SELECT * FROM employees
-                `;
+    const sql = 
+    `SELECT employees.id, first_name, last_name, roles.title, departments.name, roles.salary
+    FROM employees   
+    INNER JOIN roles ON employees.role_id = roles.id
+    INNER JOIN departments ON roles.department_id = departments.id`;
     db.query(sql, (err, rows) => {
         if (err) {
             console.log(err)
@@ -160,16 +177,17 @@ function addRole() {
             }
         },
         {
-            type: 'input',
+            type: 'list',
             name: 'department',
             message: 'Which department does this role belong to?',
-            validate: departmentInput => {
-                if(departmentInput) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
+            choices: currentDepartments
+            // validate: departmentInput => {
+            //     if(departmentInput) {
+            //         return true;
+            //     } else {
+            //         return false;
+            //     }
+            // }
         }
     ])
     .then(result => {
