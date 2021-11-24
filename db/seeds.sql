@@ -5,17 +5,17 @@ VALUES
     ('Sales'),
     ('Marketing');
 
-  INSERT INTO roles (title, salary, department_id)
-  VALUES
+INSERT INTO roles (title, salary, department_id)
+VALUES
     ('Manager', 120000, 1),
-    ('Assistant Manager', '72000', 1),
+    ('Assistant Manager', 72000, 1),
     ('Analyst', 60000, 3),
     ('Sr. Analyst', 90000, 3),
     ('Engineer', 70000, 2),
     ('Staff Engineer', 115000, 2);
 
-    INSERT INTO employees (first_name, last_name, role_id, manager_id)
-    VALUES
+INSERT INTO employees (first_name, last_name, role_id, manager_id)
+VALUES
     ('Ronald', 'Firbank', 5, 2),
     ('Virginia', 'Woolf', 6, 2),
     ('Piers', 'Gaveston', 3, 1),

@@ -3,21 +3,50 @@ const db = require('./db/connection')
 const inquirer = require('inquirer');
 const fs = require('fs');
 const cTable = require('console.table'); 
-const { query } = require('./db/connection');
+
+var currentRoles = [];
+var currentEmployees = [];
+var currentDepartments = [];
 
 // functions to store table data for prompts
-// function currentEmployees () {
-//     const sql = `Select * From employees`
-// }   db.query(sql, (req, rows) => {
-//     if(err) {
-//         console.log(err);
-//     }
-//     // push each employee from table into array
-//     for (i=0; i<rows.length; i++) {
-//         const currentEmployees = currentEmployees.push(rows[i].first_name);
-//     } 
-// })
+function allEmployees () {
+    const sql = `SELECT * FROM employees`;
+    db.query(sql, (err, rows) => {
+        if(err) {
+            console.log(err);
+        }
+        // push each current department to array 
+        for (i=0; i<rows.length; i++) {
+            currentEmployees.push(rows[i].first_name + ' ' + rows[i].last_name);           
+        }
+    });
+};
 
+function allDepartments () {
+    const sql = `SELECT * FROM departments`;
+    db.query(sql, (err, rows) => {
+        if(err) {
+            console.log(err);
+        }
+        // push each current department to array 
+        for (i=0; i<rows.length; i++) {
+            currentDepartments.push(rows[i].name);           
+        }
+    });
+};
+
+function allRoles () {
+    const sql = `SELECT * FROM roles`;
+    db.query(sql, (err, rows) => {
+        if(err) {
+            console.log(err);
+        }
+        // push each current department to array 
+        for (i=0; i<rows.length; i++) {
+            currentRoles.push(rows[i].title);           
+        }
+    });
+};
 
 // main application which executes at start
 function appMenu () {
@@ -76,17 +105,16 @@ function viewDepartments() {
             console.log(err)
         }
         console.table(rows);
-        // const currentDepartments = rows.map(({id, name}) => {
-        //     {value: id,
-        //     name: `${id} ${name}`}
-        // });
         // returns to the main menu
         appMenu();
     });   
 };
 
 function viewRoles() {
-    const sql = `SELECT * FROM roles`;
+    const sql = `
+    SELECT roles.id, title, salary, departments.name AS department
+    FROM roles
+    INNER JOIN departments ON roles.department_id = departments.id`;
     db.query(sql, (err, rows) => {
         if (err) {
             console.log(err)
@@ -99,10 +127,11 @@ function viewRoles() {
 
 function viewEmployees() {
     const sql = 
-    `SELECT employees.id, first_name, last_name, roles.title, departments.name, roles.salary
+    `SELECT employees.id, employees.first_name, employees.last_name, roles.title, departments.name AS department, roles.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager
     FROM employees   
     INNER JOIN roles ON employees.role_id = roles.id
-    INNER JOIN departments ON roles.department_id = departments.id`;
+    INNER JOIN departments ON roles.department_id = departments.id
+    LEFT JOIN employees manager on manager.id = employees.manager_id `;
     db.query(sql, (err, rows) => {
         if (err) {
             console.log(err)
@@ -150,6 +179,9 @@ function addDepartment() {
 };
 
 function addRole() {
+    // get array of department options for role to be added to
+    allDepartments();
+    
     return inquirer.prompt([
         {
             type: 'input',
@@ -181,18 +213,12 @@ function addRole() {
             name: 'department',
             message: 'Which department does this role belong to?',
             choices: currentDepartments
-            // validate: departmentInput => {
-            //     if(departmentInput) {
-            //         return true;
-            //     } else {
-            //         return false;
-            //     }
-            // }
         }
     ])
     .then(result => {
+        const newDeptId = currentDepartments.indexOf(result.department) + 1; 
         const sql = `INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)`;
-        const params = [result.role, result.salary, result.department];
+        const params = [result.role, result.salary, newDeptId];
         db.query(sql, params, (err, rows) => {
             if (err) {
                 console.log(err)
@@ -203,10 +229,15 @@ function addRole() {
             appMenu();
         });
     })
-    
+    .catch(err => {
+        console.log(err)
+    });   
 };
 
 function addEmployee() {
+    allRoles();
+    allEmployees();
+    
     return inquirer.prompt([
         {
             type: 'input',
@@ -233,38 +264,30 @@ function addEmployee() {
             }
         },
         {
-            type: 'input',
+            type: 'list',
             name: 'role',
-            message: "Please provide the employee's role-id:",
-            validate: role => {
-                if(role) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
+            message: "Please select the employee's role:",
+            choices: currentRoles
         },
         {
-            type: 'input',
+            type: 'list',
             name: 'manager',
-            message: 'Please provide the manager-id for this employee:',
-            validate: manager => {
-                if(manager) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
+            message: 'Please select the manager for this employee:',
+            choices: currentEmployees,
         }
     ])
     .then(result => {
+        const newRoleId = currentRoles.indexOf(result.role) + 1;
+        const newManagerId = currentEmployees.indexOf(result.manager) + 1;
+
         const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
-        const params = [result.firstName, result.lastName, result.role, result.manager];
+        const params = [result.firstName, result.lastName, newRoleId, newManagerId];
         db.query(sql, params, (err, rows) => {
             if (err) {
                 console.log(err)
                 return;
             }
+            console.log(rows);
             console.log("New employee has been added!");
             // returns to the main menu
             appMenu();
