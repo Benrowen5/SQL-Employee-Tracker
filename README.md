@@ -6,6 +6,9 @@
 
   <!-- * [Demonstration Video](https://watch.screencastify.com/v/HOzMMVFoJUA2vxoElFpJ) -->
   
+  ![SQL Emp Tracker](https://user-images.githubusercontent.com/79202800/143164475-4979fba5-4866-421e-8c2d-a2c48c3e80cc.PNG)
+
+  
   ***************************************************************
   ## Table of Contents
 * [Installation](#installation)
