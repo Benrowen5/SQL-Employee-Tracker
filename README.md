@@ -4,7 +4,7 @@
   ## Description
   This project is a Node.js command-line application that uses inquirer and MySQL to build and update an employee database. 
 
-  * [Demonstration Video](chrome-extension://mmeijimgabbpbgpdklnllpncmdofkcpn/app.html#/files/70b1d0f7-d9a3-4e97-y057-eebff93f3877)
+  * [Demonstration Video](https://watch.screencastify.com/v/4o7N303VghplgFXCmtZv)
   
   ![SQL Emp Tracker](https://user-images.githubusercontent.com/79202800/143164475-4979fba5-4866-421e-8c2d-a2c48c3e80cc.PNG)
 
