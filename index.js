@@ -4,6 +4,7 @@ const inquirer = require('inquirer');
 const fs = require('fs');
 const cTable = require('console.table'); 
 
+// establish global variables
 var currentRoles = [];
 var currentEmployees = [];
 var currentDepartments = [];
@@ -50,7 +51,11 @@ function allRoles () {
 
 // main application which executes at start
 function appMenu () {
-    // initial menu displays
+    // Update table data arrays
+    allEmployees();
+    allRoles();
+    allDepartments();
+    // main menu displays
     return inquirer.prompt([
         {
             type: 'list',
@@ -64,7 +69,7 @@ function appMenu () {
                 'add new role',
                 'add new employee',
                 'update employee role',
-                'close'    
+                'close application'    
             ]
         }
     ])
@@ -91,7 +96,7 @@ function appMenu () {
             case 'update employee role':
                 updateRole();
                 break;
-            case 'close':
+            case 'close application':
                 closeApp();
                 break;
         };
@@ -181,7 +186,6 @@ function addDepartment() {
 function addRole() {
     // get array of department options for role to be added to
     allDepartments();
-    
     return inquirer.prompt([
         {
             type: 'input',
@@ -237,7 +241,6 @@ function addRole() {
 function addEmployee() {
     allRoles();
     allEmployees();
-    
     return inquirer.prompt([
         {
             type: 'input',
@@ -287,20 +290,56 @@ function addEmployee() {
                 console.log(err)
                 return;
             }
-            console.log(rows);
             console.log("New employee has been added!");
             // returns to the main menu
             appMenu();
         });
     })
+    .catch(err => {
+        console.log(err)
+    });  
 };
 
 function updateRole() {
-    console.log('case 7');
+    allEmployees();
+
+    return inquirer.prompt ([
+        {
+            type: 'list',
+            name: 'update',
+            message: 'Which employee do you want to update the role for?',
+            choices: currentEmployees,
+        },
+        {
+            type: 'list',
+            name: 'newRole',
+            message: 'Please enter the title of the new role:',
+            choices: currentRoles,
+        }
+    ])
+    .then(result => {
+        const newRoleId = currentRoles.indexOf(result.newRole) + 1; 
+        const employeeId = currentEmployees.indexOf(result.update) + 1;
+        const sql = `UPDATE employees SET role_id = ? WHERE id = ?`;
+        const params = [newRoleId, employeeId];
+        db.query(sql, params, (err, rows) => {
+            if (err) {
+                console.log(err)
+                return;
+            }
+            console.log("Employee role has been updated!");
+            // returns to the main menu
+            appMenu();
+        });
+    })
+    .catch(err => {
+        console.log(err)
+    });    
 };
 
-function close() {
-    console.log('close');
+function closeApp() {
+    console.log('Closing application.');
+    process.exit();
 }
 
 // starts menu on startup
